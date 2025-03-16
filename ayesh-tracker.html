@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayesh Tracker</title>
+    <style>
+        :root {
+            --lavender-light: #E6E6FA;
+            --lavender-medium: #C5B4E3;
+            --lavender-dark: #9370DB;
+            --text-dark: #333;
+            --red: #FF6B6B;
+            --green: #4CAF50;
+            --yellow: #FFC107;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--lavender-light);
+            color: var(--text-dark);
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: var(--lavender-dark);
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            color: var(--text-dark);
+            font-size: 1.1rem;
+            margin-top: 10px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .date-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        button {
+            background-color: var(--lavender-medium);
+            border: none;
+            color: var(--text-dark);
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        button:hover {
+            background-color: var(--lavender-dark);
+            color: white;
+        }
+        
+        .people-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        input, select {
+            padding: 10px;
+            border: 1px solid var(--lavender-medium);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .tracker-container {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 5px;
+        }
+        
+        th, td {
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+        }
+        
+        th {
+            background-color: var(--lavender-medium);
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+        
+        th.name-header {
+            text-align: left;
+            min-width: 150px;
+        }
+        
+        td.name-cell {
+            text-align: left;
+            font-weight: 600;
+            background-color: var(--lavender-light);
+        }
+        
+        .status-cell {
+            background-color: var(--red);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .status-cell.pending {
+            background-color: var(--red);
+        }
+        
+        .status-cell.received {
+            background-color: var(--green);
+        }
+        
+        .status-cell.partial {
+            background-color: var(--yellow);
+        }
+        
+        .legend {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        .legend-pending {
+            background-color: var(--red);
+        }
+        
+        .legend-received {
+            background-color: var(--green);
+        }
+        
+        .legend-partial {
+            background-color: var(--yellow);
+        }
+        
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+        }
+        
+        .status-menu {
+            position: absolute;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            z-index: 10;
+            display: none;
+        }
+        
+        .status-option {
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .status-option:hover {
+            background-color: var(--lavender-light);
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+            }
+            
+            .date-controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .tracker-container {
+                padding: 10px 5px;
+            }
+            
+            th, td {
+                padding: 10px 5px;
+                font-size: 0.9rem;
+            }
+            
+            th {
+                font-size: 0.8rem;
+            }
+            
+            .status-cell {
+                min-width: 40px;
+                min-height: 40px;
+            }
+            
+            button {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+            
+            #current-date-range {
+                font-size: 0.9rem;
+            }
+            
+            /* Make tap targets bigger for mobile */
+            .status-cell {
+                min-height: 44px;
+            }
+            
+            /* Improve tap experience by having direct toggle without menu */
+            .status-menu {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Ayesh Tracker</h1>
+            <p class="subtitle">Daily updates tracking dashboard</p>
+        </header>
+        
+        <div class="controls">
+            <div class="date-controls">
+                <button id="prev-week">← Previous Week</button>
+                <span id="current-date-range">Mar 10 - Mar 16, 2025</span>
+                <button id="next-week">Next Week →</button>
+                <button id="today">Today</button>
+            </div>
+            
+            <!-- Removed people controls since team members are now hard-coded -->
+        </div>
+        
+        <div class="tracker-container">
+            <table id="tracker-table">
+                <thead>
+                    <tr id="header-row">
+                        <th class="name-header">Team Member</th>
+                        <!-- Date headers will be added dynamically -->
+                    </tr>
+                </thead>
+                <tbody id="tracker-body">
+                    <!-- Team members and statuses will be added dynamically -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color legend-pending"></div>
+                <span>Missing</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color legend-received"></div>
+                <span>Received</span>
+            </div>
+        </div>
+        
+        <div class="status-menu" id="status-menu">
+            <div class="status-option" data-status="pending">Missing</div>
+            <div class="status-option" data-status="received">Received</div>
+        </div>
+        
+        <footer>
+            <p></p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hard-coded team members
+            const teamMembers = [
+                'Rabia',
+                'Jaweria',
+                'Taha',
+                'Muzammil',
+                'Amal',
+                'Taha Khalid',
+                'Hamza',
+                'Ahmad Qadir',
+                'Aniqa',
+                'Momina',
+                'Laiba',
+                'Kinza'
+            ];
+            
+            // Status tracking object
+            let statusData = {};
+            
+            // Date handling
+            let currentDate = new Date();
+            let startOfWeek = new Date(currentDate);
+            
+            // Get to the previous Sunday (or keep it if it's already Sunday)
+            const day = startOfWeek.getDay(); // 0 is Sunday
+            startOfWeek.setDate(startOfWeek.getDate() - day);
+            
+            function formatDate(date) {
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            }
+            
+            function getFullDate(date) {
+                return date.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+            }
+            
+            function updateDateRange() {
+                const endOfWeek = new Date(startOfWeek);
+                endOfWeek.setDate(endOfWeek.getDate() + 6);
+                
+                document.getElementById('current-date-range').textContent = 
+                    `${formatDate(startOfWeek)} - ${formatDate(endOfWeek)}, ${endOfWeek.getFullYear()}`;
+            }
+            
+            // Generate header dates (for a week)
+            function generateDateHeaders() {
+                const headerRow = document.getElementById('header-row');
+                
+                // Clear existing date headers (except the first column)
+                while (headerRow.children.length > 1) {
+                    headerRow.removeChild(headerRow.lastChild);
+                }
+                
+                for (let i = 0; i < 7; i++) {
+                    const dateCell = document.createElement('th');
+                    const cellDate = new Date(startOfWeek);
+                    cellDate.setDate(cellDate.getDate() + i);
+                    
+                    const dayName = cellDate.toLocaleDateString('en-US', { weekday: 'short' });
+                    const dateStr = formatDate(cellDate);
+                    
+                    dateCell.innerHTML = `${dayName}<br>${dateStr}`;
+                    dateCell.setAttribute('data-date', getFullDate(cellDate));
+                    headerRow.appendChild(dateCell);
+                }
+            }
+            
+            // Generate table rows for each team member
+            function generateTeamRows() {
+                const tableBody = document.getElementById('tracker-body');
+                tableBody.innerHTML = ''; // Clear existing rows
+                
+                teamMembers.forEach(member => {
+                    const row = document.createElement('tr');
+                    
+                    // Add name cell
+                    const nameCell = document.createElement('td');
+                    nameCell.textContent = member;
+                    nameCell.className = 'name-cell';
+                    row.appendChild(nameCell);
+                    
+                    // Add status cells for each date
+                    for (let i = 0; i < 7; i++) {
+                        const statusCell = document.createElement('td');
+                        statusCell.className = 'status-cell pending';
+                        
+                        const cellDate = new Date(startOfWeek);
+                        cellDate.setDate(cellDate.getDate() + i);
+                        const dateStr = getFullDate(cellDate);
+                        
+                        statusCell.setAttribute('data-date', dateStr);
+                        statusCell.setAttribute('data-member', member);
+                        
+                        // If we have saved status data, apply it
+                        if (statusData[member] && statusData[member][dateStr]) {
+                            statusCell.className = `status-cell ${statusData[member][dateStr]}`;
+                        }
+                        
+                        row.appendChild(statusCell);
+                    }
+                    
+                    tableBody.appendChild(row);
+                }); 
+            }
+            
+            // Handle clicking/tapping on status cells - direct toggle for mobile friendliness
+            document.addEventListener('click', function(e) {
+                // Direct toggle on mobile
+                if (e.target.classList.contains('status-cell')) {
+                    const cell = e.target;
+                    const member = cell.getAttribute('data-member');
+                    const date = cell.getAttribute('data-date');
+                    
+                    // Toggle status directly (pending -> received -> pending)
+                    let newStatus;
+                    if (cell.classList.contains('pending')) {
+                        newStatus = 'received';
+                    } else {
+                        newStatus = 'pending';
+                    }
+                    
+                    // Update the cell
+                    cell.className = `status-cell ${newStatus}`;
+                    
+                    // Save the status
+                    if (!statusData[member]) {
+                        statusData[member] = {};
+                    }
+                    statusData[member][date] = newStatus;
+                    
+                    // Save to localStorage
+                    localStorage.setItem('ayeshTrackerData', JSON.stringify(statusData));
+                }
+                
+                // Keep menu functionality for desktop (but it's hidden on mobile via CSS)
+                if (window.innerWidth > 768) {
+                    // Close the menu if clicking elsewhere
+                    if (!e.target.closest('.status-cell') && !e.target.closest('.status-menu')) {
+                        document.getElementById('status-menu').style.display = 'none';
+                    }
+                    
+                    // Show menu when clicking a status cell
+                    if (e.target.classList.contains('status-cell')) {
+                        const menu = document.getElementById('status-menu');
+                        const rect = e.target.getBoundingClientRect();
+                        
+                        menu.style.top = rect.bottom + 'px';
+                        menu.style.left = rect.left + 'px';
+                        menu.style.display = 'block';
+                        
+                        // Store the clicked cell reference
+                        menu.setAttribute('data-target-date', e.target.getAttribute('data-date'));
+                        menu.setAttribute('data-target-member', e.target.getAttribute('data-member'));
+                    }
+                    
+                    // Handle status option selection
+                    if (e.target.classList.contains('status-option')) {
+                        const menu = document.getElementById('status-menu');
+                        const member = menu.getAttribute('data-target-member');
+                        const date = menu.getAttribute('data-target-date');
+                        const status = e.target.getAttribute('data-status');
+                        
+                        // Update the cell
+                        document.querySelectorAll(`.status-cell[data-member="${member}"][data-date="${date}"]`).forEach(cell => {
+                            cell.className = `status-cell ${status}`;
+                        });
+                        
+                        // Save the status
+                        if (!statusData[member]) {
+                            statusData[member] = {};
+                        }
+                        statusData[member][date] = status;
+                        
+                        // Save to localStorage
+                        localStorage.setItem('ayeshTrackerData', JSON.stringify(statusData));
+                        
+                        // Hide the menu
+                        menu.style.display = 'none';
+                    }
+                }
+            });
+            
+            // Navigate to previous week
+            document.getElementById('prev-week').addEventListener('click', function() {
+                startOfWeek.setDate(startOfWeek.getDate() - 7);
+                updateDateRange();
+                generateDateHeaders();
+                generateTeamRows();
+            });
+            
+            // Navigate to next week
+            document.getElementById('next-week').addEventListener('click', function() {
+                startOfWeek.setDate(startOfWeek.getDate() + 7);
+                updateDateRange();
+                generateDateHeaders();
+                generateTeamRows();
+            });
+            
+            // Go to current week
+            document.getElementById('today').addEventListener('click', function() {
+                currentDate = new Date();
+                startOfWeek = new Date(currentDate);
+                const day = startOfWeek.getDay();
+                startOfWeek.setDate(startOfWeek.getDate() - day);
+                
+                updateDateRange();
+                generateDateHeaders();
+                generateTeamRows();
+            });
+            
+            // Removed add new team member functionality since team members are now hard-coded
+            
+            // Load saved data from localStorage
+            function loadSavedData() {
+                const savedStatus = localStorage.getItem('ayeshTrackerData');
+                if (savedStatus) {
+                    statusData = JSON.parse(savedStatus);
+                }
+                
+                // Removed loading team members from localStorage since they're now hard-coded
+            }
+            
+            // Removed year in footer
+            
+            // Initialize the tracker
+            loadSavedData();
+            updateDateRange();
+            generateDateHeaders();
+            generateTeamRows();
+        });
+    </script>
+</body>
+</html>
